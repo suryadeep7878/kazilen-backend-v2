@@ -13,3 +13,4 @@ pydantic-settings
 boto3
 python-multipart
 Pillow
+razorpay

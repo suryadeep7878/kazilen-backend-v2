@@ -75,6 +75,15 @@ class Settings(BaseSettings):
     R2_PUBLIC_URL: str = os.getenv("R2_PUBLIC_URL", "").rstrip("/")
 
     # =========================================================================
+    # RAZORPAY (worker membership payments — online option alongside manual)
+    # Test keys start with rzp_test_, live with rzp_live_. Webhook secret is
+    # set in the Razorpay dashboard when registering /api/payments/webhook.
+    # =========================================================================
+    RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID", "")
+    RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET", "")
+    RAZORPAY_WEBHOOK_SECRET: str = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
+
+    # =========================================================================
     # ADMIN PANEL AUTHENTICATION (bcrypt + JWT, env-driven single admin)
     # =========================================================================
     ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "admin@kazilen.com")

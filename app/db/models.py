@@ -165,6 +165,37 @@ class MembershipSubscription(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class SubscriptionPayment(Base):
+    """Razorpay payment attempts for worker membership subscriptions.
+
+    Mirrors live_wahhtrips PaymentAttempt + Transaction pattern:
+    - one row per order creation (status=created)
+    - client verify + webhook both converge to captured (idempotent on
+      razorpay_payment_id, like wahhtrips unique Transaction.transactionId)
+    - activation writes a membership_subscriptions row; this table is the receipt.
+    Manual admin subscriptions bypass this table entirely.
+    """
+
+    __tablename__ = "subscription_payments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    worker_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    plan_id = Column(Integer, ForeignKey("membership_plans.id"), nullable=False, index=True)
+    # Activated membership_subscriptions.id (set on capture, null until paid).
+    subscription_id = Column(Integer, ForeignKey("membership_subscriptions.id"), nullable=True, index=True)
+    amount = Column(Integer, nullable=False, default=0)  # Rs snapshot of plan.price
+    currency = Column(String(10), default="INR", nullable=False)
+    razorpay_order_id = Column(String(100), unique=True, index=True, nullable=False)
+    razorpay_payment_id = Column(String(100), unique=True, index=True, nullable=True)
+    razorpay_signature = Column(String(255), nullable=True)
+    # created | captured | failed | webhook_received
+    status = Column(String(20), default="created", nullable=False)
+    raw_payload = Column(String(4000), nullable=True)  # JSON string of gateway payload
+    failure_reason = Column(String(500), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
+
+
 class ReferralConfig(Base):
     __tablename__ = "referral_config"
 
